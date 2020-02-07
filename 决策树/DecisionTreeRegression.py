@@ -8,24 +8,36 @@ from mpl_toolkits.mplot3d import Axes3D
 
 class DecisionTreeRegression():
     def __init__(self, depth = 5, min_leaf_size = 5):
+        '''
+        :param depth: 深度
+        :param min_leaf_size:最小叶子大小
+        '''
+
         self.depth = depth
         self.min_leaf_size = min_leaf_size
         self.left = None
         self.right = None
         self.prediction = None
 
-        self.j = None
-        self.s = None
+        self.j = None # 最好的特征
+        self.s = None # 最好的切分点
 
 
     def mean_squared_error(self, labels, prediction):
+        '''
 
+        :param labels: 原始值
+        :param prediction: 预测值
+        :return: 最小二乘误差
+        '''
         if labels.ndim != 1:
             print("Error: Input labels must be one dimensional")
 
         return np.mean((labels - prediction) ** 2)
 
-    def train(self, X, y):
+    def fit(self, X, y):
+
+        #防止输入一维数据
         if X.ndim == 1:
             X = X.reshape(-1, 1)
 
@@ -38,9 +50,9 @@ class DecisionTreeRegression():
             self.prediction = np.mean(y)
             return
 
-        #深度为一
+        #深度为1, 这个代码的深度是递减的
         if self.depth == 1:
-            self.prediction = np.mean(y)
+            self.prediction = np.mean(y) # 用叶子中的平均数当预测值
             return
 
         j, s, best_split, _ = self.split(X, y)
@@ -57,8 +69,8 @@ class DecisionTreeRegression():
             self.right = DecisionTreeRegression(depth = self.depth - 1, min_leaf_size = self.min_leaf_size)
 
             #左右递归
-            self.left.train(left_X, left_y)
-            self.right.train(right_X, right_y)
+            self.left.fit(left_X, left_y)
+            self.right.fit(right_X, right_y)
 
         else:
             self.prediction = np.mean(y)
@@ -67,6 +79,10 @@ class DecisionTreeRegression():
         return
 
     def squaErr(self, X, y, j, s):
+        '''
+
+        :return: 在j, s 的划分下两边的误差值之和
+        '''
         mask_left = X[:, j] < s
         mask_right = X[:, j] >= s
         X_left = X[mask_left, j]
@@ -81,13 +97,16 @@ class DecisionTreeRegression():
 
 
     def split(self, X, y):
+        '''
+        :return: 最佳特征，最佳切分点，最佳切分点的下标，最小误差值
+        '''
         min_j = 0
         min_error = np.inf
 
         for j in range(len(X[0])):
-            X_sorted = np.sort(X[:, min_j])  # 不改变X
-            slice_value = (X_sorted[1:] + X_sorted[:-1]) / 2
-            min_s = X[0, min_j] + X[-1, min_j]
+            X_sorted = np.sort(X[:, min_j])  # 排列X， 并且不改变X
+            slice_value = (X_sorted[1:] + X_sorted[:-1]) / 2 # 锯齿相加，得到中间值作为切分表
+            min_s = X[0, min_j]
             min_s_index = slice_value[0]
             for s_index in range(len(slice_value)):
                 error = self.squaErr(X, y, j, slice_value[s_index])
@@ -97,12 +116,9 @@ class DecisionTreeRegression():
                     min_s = slice_value[s_index]
                     min_s_index = s_index
 
-            return  min_j, min_s, s_index, min_error
+            return  min_j, min_s, min_s_index, min_error
 
     def predict(self, x):
-        # to avoid a number
-        if x.ndim == 0:
-            x = np.array([x])
 
         if self.prediction is not None:
 
@@ -120,15 +136,14 @@ class DecisionTreeRegression():
 
 def main():
 
+    # 训练数据集
     X = np.array([[1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7], [8, 8], [9, 9], [10, 10]])
     y = np.array([5.56, 5.70, 5.91, 6.40, 6.80, 7.05, 8.90, 8.70, 9.00, 9.05])
 
-
-
     tree = DecisionTreeRegression(depth = 4, min_leaf_size = 2)
-    tree.train(X,y)
+    tree.fit(X,y)
 
-
+    # 测试数据集
     test_cases = np.array([np.arange(0.0, 10.0, 0.01), np.arange(0.0, 10.0, 0.01)]).T
     predictions = np.array([tree.predict(x) for x in test_cases])
 
@@ -138,10 +153,6 @@ def main():
     ax.scatter(X[:, 0], X[:, 1], y, s=20, edgecolor="black",
                c="darkorange", label="data")
     ax.plot(test_cases[:, 0], test_cases[:, 1], predictions, c='r')
-
-    # plt.scatter(X[:, 0], y, s=20, edgecolor="black", c="darkorange", label="data")
-    # plt.plot(test_cases[:, 1], predictions, c="r")
-
     plt.show()
 
 
