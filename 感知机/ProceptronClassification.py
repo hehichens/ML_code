@@ -3,7 +3,9 @@
 '''
 
 import numpy as np
-
+import matplotlib.pyplot as plt
+import seaborn as sns
+sns.set()
 # 数据线性可分，二分类数据
 # 此处为一元一次线性方程
 class ProceptronClassification():
@@ -46,7 +48,6 @@ if __name__ == "__main__":
     y_pred = clf.predict(X_test)
     print("Accuracy: ", clf.score(X_test))
 
-    import matplotlib.pyplot as plt
     plt.scatter(X_train[:, 0], X_train[:, 1], c=y_train)
     xx = np.arange(X_train.min(), X_train.max(), 0.01)
     plt.plot(xx, -(clf.w[0] * xx + clf.b) / clf.w[1])
