@@ -1,4 +1,4 @@
-class SVM:
+class SVM():
     def __init__(self, max_iter=100, kernel='linear'):
         self.max_iter = max_iter
         self._kernel = kernel

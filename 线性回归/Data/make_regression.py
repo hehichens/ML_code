@@ -2,12 +2,10 @@ import numpy as np
 
 from sklearn.model_selection import train_test_split
 
-X = np.arange(0, 10, 0.1)
-y = X + (np.random.rand(len(X)) - 0.5)*4
 
-
-
-def load_data():
+def load_data(n):
+    X = np.arange(0, 10, 0.1)
+    y = X + (np.random.rand(len(X)) - 0.5) * n
     X_train, X_test, y_train, y_test = train_test_split(X, y)
     return X_train, X_test, y_train, y_test
 
